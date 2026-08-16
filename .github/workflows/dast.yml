@@ -1,0 +1,72 @@
+name: Container & DAST Gates
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  container-security:
+    name: Container Gate (Hadolint & Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Lint Backend Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: backend/Dockerfile
+          failure-threshold: warning
+
+      - name: Lint Frontend Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: frontend/Dockerfile
+          failure-threshold: warning
+
+      - name: Build Backend Image for scanning
+        run: docker build -t devsecops-backend:test ./backend
+        
+      - name: Scan Backend Image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'devsecops-backend:test'
+          format: 'table'
+          exit-code: '1' # Block pipeline on vulnerabilities
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  dast-zap:
+    name: DAST Gate (OWASP ZAP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Start Production Containers
+        run: docker compose -f docker-compose.prod.yml up -d
+        
+      - name: Wait for Backend Health
+        run: |
+          echo "Waiting for backend healthcheck..."
+          # Retry loop until http://localhost:3000/health returns 200
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/health || echo "000")
+            if [ "$STATUS" -eq 200 ]; then
+              echo "Backend is healthy!"
+              exit 0
+            fi
+            echo "Attempt $i: Status is $STATUS. Waiting 5s..."
+            sleep 5
+          done
+          echo "Backend failed to become healthy!"
+          docker compose -f docker-compose.prod.yml logs
+          exit 1
+          
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'http://localhost:3000'
+          fail_action: true # Explicitly fail on ZAP alerts
+          cmd_options: '-a'
