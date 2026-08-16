@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache python3 make g++ && npm ci
+RUN apk upgrade --no-cache && apk add --no-cache python3 make g++ && npm ci
 RUN npx prisma generate
 
 COPY . .
@@ -20,10 +20,10 @@ FROM node:20-alpine AS production
 WORKDIR /usr/src/app
 
 # Only copy necessary files from builder
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/package*.json ./
-COPY --from=builder /usr/src/app/prisma ./prisma
+COPY --chown=node:node --from=builder /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /usr/src/app/dist ./dist
+COPY --chown=node:node --from=builder /usr/src/app/package*.json ./
+COPY --chown=node:node --from=builder /usr/src/app/prisma ./prisma
 
 # Use non-root user
 USER node

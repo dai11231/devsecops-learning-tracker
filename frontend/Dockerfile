@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci
+RUN apk upgrade --no-cache && npm ci
 
 COPY . .
 
@@ -14,11 +14,13 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine AS production
 
+RUN apk upgrade --no-cache
+
 # Remove default nginx static assets
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy build files
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --chown=nginx:nginx --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
