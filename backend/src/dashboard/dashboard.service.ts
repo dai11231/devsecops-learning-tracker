@@ -18,11 +18,16 @@ export class DashboardService {
       },
       select: { topicId: true },
     });
-    const completedTopicIds = new Set(completedProgresses.map((p) => p.topicId));
+    const completedTopicIds = new Set(
+      completedProgresses.map((p) => p.topicId),
+    );
     const completedTopicsCount = completedTopicIds.size;
 
     // 3. Calculate overall percentage
-    const overallPercentage = totalTopics === 0 ? 0 : Number(((completedTopicsCount / totalTopics) * 100).toFixed(2));
+    const overallPercentage =
+      totalTopics === 0
+        ? 0
+        : Number(((completedTopicsCount / totalTopics) * 100).toFixed(2));
 
     // 4. Get categories with their topics to calculate category-level stats
     const categories = await this.prisma.category.findMany({
@@ -42,8 +47,11 @@ export class DashboardService {
           catCompletedTopics++;
         }
       }
-      
-      const catPercentage = catTotalTopics === 0 ? 0 : Number(((catCompletedTopics / catTotalTopics) * 100).toFixed(2));
+
+      const catPercentage =
+        catTotalTopics === 0
+          ? 0
+          : Number(((catCompletedTopics / catTotalTopics) * 100).toFixed(2));
 
       return {
         id: cat.id,

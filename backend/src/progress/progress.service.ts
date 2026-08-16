@@ -26,14 +26,21 @@ export class ProgressService {
     return progress;
   }
 
-  async upsertProgress(userId: number, topicId: number, dto: UpdateProgressDto) {
+  async upsertProgress(
+    userId: number,
+    topicId: number,
+    dto: UpdateProgressDto,
+  ) {
     // Validate that the topic exists first
-    const topic = await this.prisma.topic.findUnique({ where: { id: topicId } });
+    const topic = await this.prisma.topic.findUnique({
+      where: { id: topicId },
+    });
     if (!topic) {
       throw new NotFoundException('Topic not found');
     }
 
-    const completedAt = dto.status === ProgressStatus.COMPLETED ? new Date() : null;
+    const completedAt =
+      dto.status === ProgressStatus.COMPLETED ? new Date() : null;
 
     return this.prisma.progress.upsert({
       where: {

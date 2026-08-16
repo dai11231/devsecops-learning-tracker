@@ -7,12 +7,12 @@ import * as argon2 from 'argon2';
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
-    if (user && await argon2.verify(user.passwordHash, pass)) {
+    if (user && (await argon2.verify(user.passwordHash, pass))) {
       const { passwordHash, ...result } = user;
       return result;
     }

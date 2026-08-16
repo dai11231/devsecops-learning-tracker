@@ -27,10 +27,12 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            throttler_1.ThrottlerModule.forRoot([{
+            throttler_1.ThrottlerModule.forRoot([
+                {
                     ttl: 60000,
                     limit: 10,
-                }]),
+                },
+            ]),
             prisma_module_1.PrismaModule,
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
@@ -39,7 +41,7 @@ exports.AppModule = AppModule = __decorate([
             notes_module_1.NotesModule,
             resources_module_1.ResourcesModule,
             progress_module_1.ProgressModule,
-            dashboard_module_1.DashboardModule
+            dashboard_module_1.DashboardModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
@@ -47,7 +49,7 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: throttler_1.ThrottlerGuard,
-            }
+            },
         ],
     })
 ], AppModule);

@@ -29,7 +29,9 @@ let DashboardService = class DashboardService {
         });
         const completedTopicIds = new Set(completedProgresses.map((p) => p.topicId));
         const completedTopicsCount = completedTopicIds.size;
-        const overallPercentage = totalTopics === 0 ? 0 : Number(((completedTopicsCount / totalTopics) * 100).toFixed(2));
+        const overallPercentage = totalTopics === 0
+            ? 0
+            : Number(((completedTopicsCount / totalTopics) * 100).toFixed(2));
         const categories = await this.prisma.category.findMany({
             include: {
                 topics: {
@@ -46,7 +48,9 @@ let DashboardService = class DashboardService {
                     catCompletedTopics++;
                 }
             }
-            const catPercentage = catTotalTopics === 0 ? 0 : Number(((catCompletedTopics / catTotalTopics) * 100).toFixed(2));
+            const catPercentage = catTotalTopics === 0
+                ? 0
+                : Number(((catCompletedTopics / catTotalTopics) * 100).toFixed(2));
             return {
                 id: cat.id,
                 name: cat.name,

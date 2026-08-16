@@ -1,10 +1,26 @@
-import { Controller, Request, Post, UseGuards, Get, Res, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Post,
+  UseGuards,
+  Get,
+  Res,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags, ApiBody, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')

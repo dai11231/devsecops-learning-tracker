@@ -15,10 +15,12 @@ import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -27,7 +29,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     NotesModule,
     ResourcesModule,
     ProgressModule,
-    DashboardModule
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [
@@ -35,7 +37,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    }
+    },
   ],
 })
 export class AppModule {}

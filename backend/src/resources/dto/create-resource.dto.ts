@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsUrl, IsOptional, IsInt } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsUrl,
+  IsOptional,
+  IsInt,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateResourceDto {

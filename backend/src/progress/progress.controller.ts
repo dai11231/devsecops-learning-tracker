@@ -1,4 +1,13 @@
-import { Controller, Get, Patch, Param, Body, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ProgressService } from './progress.service';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,7 +28,10 @@ export class ProgressController {
 
   @Get(':topicId')
   @ApiOperation({ summary: 'Get progress for a specific topic' })
-  findOne(@Request() req: any, @Param('topicId', ParseIntPipe) topicId: number) {
+  findOne(
+    @Request() req: any,
+    @Param('topicId', ParseIntPipe) topicId: number,
+  ) {
     return this.progressService.findOne(req.user.id, topicId);
   }
 

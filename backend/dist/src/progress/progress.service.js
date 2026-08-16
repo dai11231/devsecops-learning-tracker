@@ -36,7 +36,9 @@ let ProgressService = class ProgressService {
         return progress;
     }
     async upsertProgress(userId, topicId, dto) {
-        const topic = await this.prisma.topic.findUnique({ where: { id: topicId } });
+        const topic = await this.prisma.topic.findUnique({
+            where: { id: topicId },
+        });
         if (!topic) {
             throw new common_1.NotFoundException('Topic not found');
         }

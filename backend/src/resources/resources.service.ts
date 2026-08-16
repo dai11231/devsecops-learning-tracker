@@ -8,7 +8,7 @@ import { UpdateResourceDto } from './dto/update-resource.dto';
 export class ResourcesService {
   constructor(
     private prisma: PrismaService,
-    private topicsService: TopicsService
+    private topicsService: TopicsService,
   ) {}
 
   async create(topicId: number, createResourceDto: CreateResourceDto) {

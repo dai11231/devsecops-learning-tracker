@@ -8,7 +8,7 @@ import { UpdateNoteDto } from './dto/update-note.dto';
 export class NotesService {
   constructor(
     private prisma: PrismaService,
-    private topicsService: TopicsService
+    private topicsService: TopicsService,
   ) {}
 
   async create(topicId: number, createNoteDto: CreateNoteDto) {

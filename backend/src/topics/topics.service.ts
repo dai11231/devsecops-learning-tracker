@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CategoriesService } from '../categories/categories.service';
 import { CreateTopicDto } from './dto/create-topic.dto';
@@ -8,7 +12,7 @@ import { UpdateTopicDto } from './dto/update-topic.dto';
 export class TopicsService {
   constructor(
     private prisma: PrismaService,
-    private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
   ) {}
 
   async create(categoryId: number, createTopicDto: CreateTopicDto) {
@@ -18,7 +22,8 @@ export class TopicsService {
         data: { ...createTopicDto, categoryId },
       });
     } catch (e) {
-      if (e.code === 'P2002') throw new ConflictException('Slug already exists');
+      if (e.code === 'P2002')
+        throw new ConflictException('Slug already exists');
       throw e;
     }
   }
@@ -45,7 +50,8 @@ export class TopicsService {
         data: updateTopicDto,
       });
     } catch (e) {
-      if (e.code === 'P2002') throw new ConflictException('Slug already exists');
+      if (e.code === 'P2002')
+        throw new ConflictException('Slug already exists');
       throw e;
     }
   }
@@ -56,7 +62,9 @@ export class TopicsService {
       return await this.prisma.topic.delete({ where: { id } });
     } catch (e) {
       if (e.code === 'P2003') {
-        throw new ConflictException('Cannot delete topic because it contains notes or resources');
+        throw new ConflictException(
+          'Cannot delete topic because it contains notes or resources',
+        );
       }
       throw e;
     }

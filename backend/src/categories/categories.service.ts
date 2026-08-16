@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -11,7 +15,8 @@ export class CategoriesService {
     try {
       return await this.prisma.category.create({ data: createCategoryDto });
     } catch (e) {
-      if (e.code === 'P2002') throw new ConflictException('Slug already exists');
+      if (e.code === 'P2002')
+        throw new ConflictException('Slug already exists');
       throw e;
     }
   }
@@ -29,9 +34,13 @@ export class CategoriesService {
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     await this.findOne(id); // Ensure exists
     try {
-      return await this.prisma.category.update({ where: { id }, data: updateCategoryDto });
+      return await this.prisma.category.update({
+        where: { id },
+        data: updateCategoryDto,
+      });
     } catch (e) {
-      if (e.code === 'P2002') throw new ConflictException('Slug already exists');
+      if (e.code === 'P2002')
+        throw new ConflictException('Slug already exists');
       throw e;
     }
   }
@@ -43,7 +52,9 @@ export class CategoriesService {
     } catch (e) {
       // Prisma error for Restrict violation (foreign key constraint)
       if (e.code === 'P2003') {
-        throw new ConflictException('Cannot delete category because it contains topics');
+        throw new ConflictException(
+          'Cannot delete category because it contains topics',
+        );
       }
       throw e;
     }

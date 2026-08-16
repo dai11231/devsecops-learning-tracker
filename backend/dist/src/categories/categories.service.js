@@ -39,7 +39,10 @@ let CategoriesService = class CategoriesService {
     async update(id, updateCategoryDto) {
         await this.findOne(id);
         try {
-            return await this.prisma.category.update({ where: { id }, data: updateCategoryDto });
+            return await this.prisma.category.update({
+                where: { id },
+                data: updateCategoryDto,
+            });
         }
         catch (e) {
             if (e.code === 'P2002')

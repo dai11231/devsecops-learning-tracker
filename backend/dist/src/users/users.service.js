@@ -20,10 +20,7 @@ let UsersService = class UsersService {
     async findOne(usernameOrEmail) {
         return this.prisma.user.findFirst({
             where: {
-                OR: [
-                    { username: usernameOrEmail },
-                    { email: usernameOrEmail },
-                ],
+                OR: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
             },
         });
     }
