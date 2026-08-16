@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -15,10 +15,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine AS production
-
-# Update npm to fix bundled vulnerabilities like Node-tar
-RUN npm install -g npm@latest
+FROM node:24-alpine AS production
 
 WORKDIR /usr/src/app
 
