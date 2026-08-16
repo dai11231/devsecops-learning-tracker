@@ -1,0 +1,117 @@
+name: Supply Chain Security (v0.2-A)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-backend
+
+jobs:
+  build-scan-sign-verify:
+    name: Build, SBOM, Scan, Sign & Verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # Bắt buộc cho Cosign OIDC Keyless Signing
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # A2. Build immutable Docker images (sử dụng git sha)
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} ./backend
+
+      # A3. Generate SBOM with Syft
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+      # A4. Trivy SBOM/Image Gate
+      - name: Scan Image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '1' # BLOCK PIPELINE NẾU CÓ LỖI HIGH/CRITICAL
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # A5. Push image to GHCR (chỉ chạy khi merge vào main, không chạy lúc PR)
+      - name: Log in to the Container registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker Image
+        if: github.event_name != 'pull_request'
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      # A6. Cosign Keyless Sign via GitHub OIDC
+      - name: Install Cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Install Skopeo
+        if: github.event_name != 'pull_request'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo
+
+      - name: Resolve & Validate Immutable Digest
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Resolving digest from registry..."
+          DIGEST=$(skopeo inspect --format '{{.Digest}}' docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }})
+          
+          echo "Validating digest format..."
+          if [[ ! "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "❌ ERROR: Invalid digest format resolved: $DIGEST"
+            exit 1
+          fi
+          
+          echo "Resolved Digest: $DIGEST"
+          echo "IMAGE_DIGEST=$DIGEST" >> $GITHUB_ENV
+
+      - name: Sign the published Docker image
+        if: github.event_name != 'pull_request'
+        run: |
+          # Ký đúng trên digest đã được resolve và validate
+          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ env.IMAGE_DIGEST }}
+
+      # A7. Cosign Verify + Identity verification
+      - name: Verify Image Signature (Trust Gate)
+        if: github.event_name != 'pull_request'
+        run: |
+          # Kiểm tra chữ ký VÀ danh tính người ký dựa trên content-addressable digest
+          cosign verify \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.github/workflows/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ env.IMAGE_DIGEST }}

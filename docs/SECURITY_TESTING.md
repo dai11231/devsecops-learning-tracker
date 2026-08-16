@@ -39,3 +39,12 @@ export async function vulnerableQuery(userInput: string) {
 3. Observe the pipeline passing successfully and the pull request being cleared for merging.
 
 > **Note:** The `main` branch is protected by these gates. Any PR attempting to merge vulnerabilities will be strictly denied.
+
+## 5. Crucial Setup: GitHub Branch Protection
+A pipeline failing does NOT automatically prevent a user from clicking the "Merge" button on GitHub. For the gates to be truly blocking, you must configure **Branch Protection Rules**:
+1. Go to your GitHub Repository -> **Settings** -> **Branches**.
+2. Add a branch protection rule for `main`.
+3. Check **"Require status checks to pass before merging"**.
+4. Select all the security jobs (e.g., `Secret Gate (Gitleaks)`, `SAST Gate (Semgrep)`, `Container Gate (Hadolint & Trivy)`, etc.).
+
+Without this setting, it's just a warning. With this setting, it's a true **DevSecOps Gate**.

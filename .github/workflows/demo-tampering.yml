@@ -1,0 +1,31 @@
+name: Demo Image Tampering (v0.2-A)
+
+on:
+  workflow_dispatch:
+    inputs:
+      fake_image:
+        description: 'Image chưa được ký hoặc bị giả mạo (vd: nginx:latest)'
+        required: true
+        default: 'nginx:latest'
+
+jobs:
+  verify-tampered-image:
+    name: Verify Untrusted Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Attempt to Verify Fake Image
+        run: |
+          echo "Bắt đầu verify image: ${{ inputs.fake_image }}"
+          echo "Kỳ vọng: Lệnh này sẽ THẤT BẠI (Exit Code != 0) vì image không được ký bởi Repository này!"
+          
+          # Lệnh này sẽ CHẮC CHẮN block do không có chữ ký hoặc chữ ký sai identity
+          cosign verify \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.github/workflows/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            ${{ inputs.fake_image }} || {
+              echo "✅ THÀNH CÔNG! Pipeline đã chặn được Image không an toàn."
+              exit 1
+            }

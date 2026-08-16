@@ -18,33 +18,36 @@ For detailed documentation, refer to:
 
 ## Security Architecture & DevSecOps Pipeline
 
-This project is defined by its DevSecOps Pipeline. We do not just run scanners; we enforce **Security Gates**. If a vulnerability is detected, the pipeline **FAILS** and the pull request is **BLOCKED**.
+This project is defined by its DevSecOps Pipeline. If a vulnerability is detected, the pipeline **FAILS** and the pull request is **BLOCKED**. In v0.2-A, we introduced **Software Supply Chain Security**.
 
 ```text
-PR
+PR / Push
  ↓
 CI (Lint, Build)
  ↓
-Gitleaks (Secret Gate)
+SAST & Secret Gates (Gitleaks, Semgrep, OSV)
  ↓
-Semgrep (SAST Gate)
+Build Immutable Docker Image (Git SHA)
  ↓
-OSV (SCA Gate)
+SBOM Generation (Syft)
  ↓
-Dependency Review (SCA Gate)
+Container SCA Gate (Trivy Scan Image & SBOM)
  ↓
-Hadolint (Container Lint)
+Publish to GHCR
  ↓
-Trivy (Container SCA)
+Sign Image (Cosign Keyless + GitHub OIDC)
  ↓
-OWASP ZAP (DAST Gate)
+Trust Gate (Cosign Verify Identity & Issuer)
  ↓
-✅ Merge
+✅ Release / Deploy
 ```
 
 ## Security Evidence
 
 This project serves as a portfolio piece for DevSecOps practices. We have documented and proven the following capabilities:
+
+✓ **Supply Chain Trust Gate**: Cosign blocks any artifact that was not cryptographically signed by the official GitHub Actions pipeline of this repository.
+✓ **SBOM Generation**: Full visibility into container dependencies via Syft (SPDX).
 
 ✓ **User Isolation Regression Test**: Backend ignores client-provided `userId` and relies on cryptographically secure HttpOnly cookies, mitigating IDOR by design.
 ✓ **Intentional Vulnerability Testing**: See [SECURITY_TESTING.md](docs/SECURITY_TESTING.md) for instructions on how to trigger pipeline failures intentionally.
