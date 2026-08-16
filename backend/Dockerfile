@@ -6,7 +6,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY prisma ./prisma/
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache python3 make g++ && npm ci
+RUN npx prisma generate
 
 COPY . .
 
