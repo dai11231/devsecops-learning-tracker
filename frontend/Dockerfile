@@ -14,10 +14,9 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine AS production
 
-RUN apk upgrade --no-cache
-
-# Remove default nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+# Remove default nginx static assets and upgrade alpine packages
+RUN apk upgrade --no-cache && \
+    rm -rf /usr/share/nginx/html/*
 
 # Copy build files
 COPY --chown=nginx:nginx --from=builder /app/dist /usr/share/nginx/html

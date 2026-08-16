@@ -17,6 +17,9 @@ RUN npm run build
 # Production stage
 FROM node:20-alpine AS production
 
+# Update npm to fix bundled vulnerabilities like Node-tar
+RUN npm install -g npm@latest
+
 WORKDIR /usr/src/app
 
 # Only copy necessary files from builder
@@ -24,6 +27,7 @@ COPY --chown=node:node --from=builder /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /usr/src/app/dist ./dist
 COPY --chown=node:node --from=builder /usr/src/app/package*.json ./
 COPY --chown=node:node --from=builder /usr/src/app/prisma ./prisma
+COPY --chown=node:node --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
 
 # Use non-root user
 USER node
