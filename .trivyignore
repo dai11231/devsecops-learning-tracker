@@ -10,5 +10,8 @@ CVE-2026-59874
 # node-tar DoS via crafted gzip bomb (bundled in npm) - CRITICAL
 CVE-2026-59873
 
+# sigstore unauthorized certificates accepted (bundled dependency) - HIGH
+CVE-2026-48815
+
 # undici WebSocket unbounded memory growth (bundled in Node.js core)
 CVE-2026-12151
