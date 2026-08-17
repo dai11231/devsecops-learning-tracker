@@ -37,6 +37,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
 
   dast-zap:
     name: DAST Gate (OWASP ZAP)
@@ -46,7 +47,11 @@ jobs:
       
       - name: Start Production Containers
         run: docker compose -f docker-compose.prod.yml up -d
-        
+
+      - name: Debug Backend Logs on Failure
+        if: failure()
+        run: docker compose -f docker-compose.prod.yml logs backend
+
       - name: Wait for Backend Health
         run: |
           echo "Waiting for backend healthcheck..."

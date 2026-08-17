@@ -60,6 +60,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
 
       # A5. Push image to GHCR (chỉ chạy khi merge vào main, không chạy lúc PR)
       - name: Log in to the Container registry

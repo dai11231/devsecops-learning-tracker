@@ -19,12 +19,22 @@ FROM node:22-alpine AS production
 
 WORKDIR /usr/src/app
 
-# Only copy necessary files from builder
-COPY --chown=node:node --from=builder /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node --from=builder /usr/src/app/dist ./dist
-COPY --chown=node:node --from=builder /usr/src/app/package*.json ./
-COPY --chown=node:node --from=builder /usr/src/app/prisma ./prisma
-COPY --chown=node:node --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
+# Copy package files and install production-only dependencies
+COPY --from=builder /usr/src/app/package*.json ./
+COPY --from=builder /usr/src/app/prisma ./prisma
+COPY --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
+
+# hadolint ignore=DL3018
+RUN apk add --no-cache python3 make g++ \
+    && npm ci --omit=dev \
+    && npx prisma generate \
+    && apk del python3 make g++
+
+# Copy built application
+COPY --from=builder /usr/src/app/dist ./dist
+
+# Set correct ownership for non-root user
+RUN chown -R node:node /usr/src/app
 
 # Use non-root user
 USER node

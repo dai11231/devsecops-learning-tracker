@@ -1,0 +1,11 @@
+# Node.js runtime bundled vulnerabilities - accepted risk
+# These CVEs come from the Node.js base image, not our application code.
+# They will be resolved when Node.js releases a patched version.
+# Review date: 2026-08-17
+# Next review: 2026-09-01
+
+# node-tar DoS via negative base-256 header (bundled in npm)
+CVE-2026-59874
+
+# undici WebSocket unbounded memory growth (bundled in Node.js core)
+CVE-2026-12151
