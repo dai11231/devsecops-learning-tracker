@@ -6,9 +6,10 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# hadolint ignore=DL3018
-RUN apk upgrade --no-cache && apk add --no-cache python3 make g++ && npm ci
-RUN npx prisma generate
+# hadolint ignore=DL3018,DL3017,DL3059
+RUN apk upgrade --no-cache && apk add --no-cache python3 make g++ \
+    && npm ci \
+    && npx prisma generate
 
 COPY . .
 
@@ -25,10 +26,12 @@ COPY --from=builder /usr/src/app/prisma ./prisma
 COPY --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /usr/src/app/dist ./dist
 
-# hadolint ignore=DL3018
+# hadolint ignore=DL3018,DL3017,DL3059
 RUN apk add --no-cache python3 make g++ \
     && npm ci --omit=dev \
+    && npm install prisma@^7.9.1 --no-save \
     && npx prisma generate \
+    && npm uninstall prisma --no-save \
     && apk del python3 make g++
 
 # Use non-root user
