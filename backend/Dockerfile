@@ -29,10 +29,11 @@ COPY --from=builder /usr/src/app/dist ./dist
 # hadolint ignore=DL3018,DL3017,DL3059
 RUN apk add --no-cache python3 make g++ \
     && npm ci --omit=dev \
-    && npm install prisma@^7.9.1 --no-save \
-    && npx prisma generate \
-    && npm uninstall prisma --no-save \
     && apk del python3 make g++
+
+# Copy generated Prisma Client AFTER npm ci wipes node_modules
+COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /usr/src/app/node_modules/@prisma ./node_modules/@prisma
 
 # Use non-root user
 USER node
